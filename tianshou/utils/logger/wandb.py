@@ -54,6 +54,7 @@ class WandbLogger(BaseLogger):
         entity: Optional[str] = None,
         run_id: Optional[str] = None,
         config: Optional[argparse.Namespace] = None,
+        tags: Optional[list] = None,  # my addition, not in original
     ) -> None:
         super().__init__(train_interval, test_interval, update_interval)
         self.last_save_step = -1
@@ -70,8 +71,9 @@ class WandbLogger(BaseLogger):
             resume="allow",
             entity=entity,
             sync_tensorboard=True,
-            monitor_gym=True,
+            monitor_gym=False,
             config=config,  # type: ignore
+            tags=tags,  # my addition, not in original
         ) if not wandb.run else wandb.run
         self.wandb_run._label(repo="tianshou")  # type: ignore
         self.tensorboard_logger: Optional[TensorboardLogger] = None

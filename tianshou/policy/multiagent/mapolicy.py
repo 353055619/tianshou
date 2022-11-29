@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 from tianshou.data import Batch, ReplayBuffer
-from tianshou.policy import BasePolicy
+from tianshou.policy import BasePolicy, RandomPolicy
 
 try:
     from tianshou.env.pettingzoo_env import PettingZooEnv
@@ -67,11 +67,18 @@ class MultiAgentPolicyManager(BasePolicy):
             if has_rew:
                 tmp_batch.rew = tmp_batch.rew[:, self.agent_idx[agent]]
                 buffer._meta.rew = save_rew[:, self.agent_idx[agent]]
-            if not hasattr(tmp_batch.obs, "mask"):
+            # my version
+            if not isinstance(policy, RandomPolicy):
                 if hasattr(tmp_batch.obs, 'obs'):
                     tmp_batch.obs = tmp_batch.obs.obs
                 if hasattr(tmp_batch.obs_next, 'obs'):
                     tmp_batch.obs_next = tmp_batch.obs_next.obs
+            # tianshou version
+            # if not hasattr(tmp_batch.obs, "mask"):
+            #     if hasattr(tmp_batch.obs, 'obs'):
+            #         tmp_batch.obs = tmp_batch.obs.obs
+            #     if hasattr(tmp_batch.obs_next, 'obs'):
+            #         tmp_batch.obs_next = tmp_batch.obs_next.obs
             results[agent] = policy.process_fn(tmp_batch, buffer, tmp_indice)
         if has_rew:  # restore from save_rew
             buffer._meta.rew = save_rew
@@ -137,11 +144,18 @@ class MultiAgentPolicyManager(BasePolicy):
             if isinstance(tmp_batch.rew, np.ndarray):
                 # reward can be empty Batch (after initial reset) or nparray.
                 tmp_batch.rew = tmp_batch.rew[:, self.agent_idx[agent_id]]
-            if not hasattr(tmp_batch.obs, "mask"):
+            # my version
+            if not isinstance(policy, RandomPolicy):
                 if hasattr(tmp_batch.obs, 'obs'):
                     tmp_batch.obs = tmp_batch.obs.obs
                 if hasattr(tmp_batch.obs_next, 'obs'):
                     tmp_batch.obs_next = tmp_batch.obs_next.obs
+            # tianshou version
+            # if not hasattr(tmp_batch.obs, "mask"):
+            #     if hasattr(tmp_batch.obs, 'obs'):
+            #         tmp_batch.obs = tmp_batch.obs.obs
+            #     if hasattr(tmp_batch.obs_next, 'obs'):
+            #         tmp_batch.obs_next = tmp_batch.obs_next.obs
             out = policy(
                 batch=tmp_batch,
                 state=None if state is None else state[agent_id],
